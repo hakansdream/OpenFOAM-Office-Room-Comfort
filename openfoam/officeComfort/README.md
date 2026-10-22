@@ -125,7 +125,9 @@ To make the room more neutral, try a supply temperature of 19–20 °C. You can 
 
 <br>
 
-Open the case in ParaView (`paraFoam`, or `touch office.foam` and open that file). Then look at:
+For a ready-made 3D view (furniture, air paths from the diffuser and PMV at neck height), run `paraview --script=view_room.py` in the case folder. More slices are prepared in the Pipeline Browser: switch them on with the eye icons.
+
+Or open the case in ParaView yourself (`paraFoam`, or `touch office.foam` and open that file). Then look at:
 
 - **Slices at z = 0.1 m, 0.6 m and 1.1 m:** ankle, waist and neck height of a seated person. These are the measurement heights of EN ISO 7726.
 
