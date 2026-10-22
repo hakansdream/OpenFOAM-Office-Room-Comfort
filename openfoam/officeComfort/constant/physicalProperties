@@ -1,0 +1,55 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+  =========                 |
+  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Version:  14
+     \\/     M anipulation  |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    format      ascii;
+    class       dictionary;
+    location    "constant";
+    object      physicalProperties;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+// Air with the Boussinesq approximation, valid for the small temperature
+// differences in a room
+
+thermoType
+{
+    type            heRhoThermo;
+    mixture         pureMixture;
+    transport       const;
+    thermo          eConst;
+    equationOfState Boussinesq;
+    specie          specie;
+    energy          sensibleInternalEnergy;
+}
+
+mixture
+{
+    specie
+    {
+        molWeight       28.9;
+    }
+    equationOfState
+    {
+        rho0            1.2;        // [kg/m^3] density at T0
+        T0              297.15;     // [K] reference temperature (24 degC)
+        beta            3.37e-3;    // [1/K] thermal expansion, 1/T0
+    }
+    thermodynamics
+    {
+        Cv              717;        // [J/kg/K] gives Cp = 1005 J/kg/K
+        hf              0;
+    }
+    transport
+    {
+        mu              1.8e-05;    // [kg/m/s]
+        Pr              0.71;
+    }
+}
+
+// ************************************************************************* //

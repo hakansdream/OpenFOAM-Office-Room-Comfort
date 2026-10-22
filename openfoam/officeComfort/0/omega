@@ -1,0 +1,46 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+  =========                 |
+  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Version:  14
+     \\/     M anipulation  |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    format      ascii;
+    class       volScalarField;
+    location    "0";
+    object      omega;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+dimensions      [turbulentOmega];
+
+internalField   uniform 0.5;
+
+boundaryField
+{
+    wall
+    {
+        type            omegaWallFunction;
+        blended         true;
+        value           $internalField;
+    }
+
+    // Mixing length ~ 0.07 x hydraulic diameter of a slot
+    "supply.*"
+    {
+        type            turbulentOmega;
+        mixingLength    0.006;
+        value           $internalField;
+    }
+
+    return
+    {
+        type            inletOutlet;
+        inletValue      $internalField;
+        value           $internalField;
+    }
+}
+
+// ************************************************************************* //
