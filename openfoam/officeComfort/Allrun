@@ -1,0 +1,31 @@
+#!/bin/sh
+cd ${0%/*} || exit 1    # Run from this directory
+
+# Source tutorial run functions
+. $WM_PROJECT_DIR/bin/tools/RunFunctions
+
+# Mesh
+runApplication blockMesh
+runApplication snappyHexMesh
+runApplication createPatch
+runApplication checkMesh
+
+# Steady-state solution in parallel
+runApplication decomposePar
+runParallel foamRun
+runApplication reconstructPar -noZero
+
+# Mean radiant temperature = area-averaged room envelope temperature over the
+# last 500 iterations
+Trad=$(awk '!/^#/ && NF {t[n] = $1; T[n++] = $2}
+    END {for (i = 0; i < n; i++) if (t[i] > t[n-1] - 500) {s += T[i]; m++}
+        print s/m}' postProcessing/envelopeT/0/surfaceFieldValue.dat)
+foamDictionary -entry comfort/Trad -set "$Trad" system/comfortFunctions
+
+# Thermal comfort (PMV, PPD, DR) and age of air for the last 5 solutions
+runApplication -s comfort \
+    foamPostProcess -solver fluid -noZero -dict system/comfortFunctions
+
+./comfortReport
+
+#------------------------------------------------------------------------------

@@ -1,0 +1,65 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+  =========                 |
+  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Version:  14
+     \\/     M anipulation  |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    format      ascii;
+    class       volVectorField;
+    location    "0";
+    object      U;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+dimensions      [velocity];
+
+internalField   uniform (0 0 0);
+
+boundaryField
+{
+    wall
+    {
+        type            noSlip;
+    }
+
+    // 4-way ceiling diffuser, 300 m^3/h in total.
+    // Each slot is 0.02 m^2, so the downward (normal) velocity is
+    //     300/3600/(4*0.02) = 1.042 m/s
+    // The jets leave 20 degrees below the ceiling, so the horizontal
+    // velocity is 1.042/tan(20 deg) = 2.862 m/s (3.05 m/s jet speed).
+    // To change the air flow rate, scale both components.
+    supply_xPos
+    {
+        type            fixedValue;
+        value           uniform ( 2.862  0     -1.042);
+    }
+
+    supply_xNeg
+    {
+        type            fixedValue;
+        value           uniform (-2.862  0     -1.042);
+    }
+
+    supply_yPos
+    {
+        type            fixedValue;
+        value           uniform ( 0      2.862 -1.042);
+    }
+
+    supply_yNeg
+    {
+        type            fixedValue;
+        value           uniform ( 0     -2.862 -1.042);
+    }
+
+    return
+    {
+        type            pressureInletOutletVelocity;
+        value           $internalField;
+    }
+}
+
+// ************************************************************************* //

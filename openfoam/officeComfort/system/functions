@@ -1,0 +1,81 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+  =========                 |
+  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Version:  14
+     \\/     M anipulation  |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    format      ascii;
+    class       dictionary;
+    location    "system";
+    object      functions;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+// Run-time monitoring. Thermal comfort is evaluated after convergence,
+// see system/comfortFunctions.
+
+#includeFunc residuals(p_rgh, U, e, k, omega)
+
+// Air balance: mass flow rate [kg/s] through the supply slots and the return
+supplyFlowRate
+{
+    type            surfaceFieldValue;
+    libs            ("libfieldFunctionObjects.so");
+    patches         ("supply.*");
+    fields          (phi);
+    operation       sum;
+    writeFields     false;
+    writeControl    timeStep;
+    writeInterval   10;
+}
+
+#includeFunc patchFlowRate(name=returnFlowRate, patch=return)
+
+// Return (extract) air temperature
+#includeFunc patchAverage(name=returnT, patch=return, T)
+
+// Mean room air temperature
+#includeFunc volAverage(name=Tmean, T)
+
+// Area-averaged surface temperature of the room envelope. Allrun uses the
+// final value as the mean radiant temperature for the comfort evaluation.
+envelopeT
+{
+    type            surfaceFieldValue;
+    libs            ("libfieldFunctionObjects.so");
+    patches         (floor ceiling walls facade window lights);
+    fields          (T);
+    operation       areaAverage;
+    writeFields     false;
+    writeControl    timeStep;
+    writeInterval   10;
+}
+
+probes
+{
+    type            probes;
+    libs            ("libsampling.so");
+    writeControl    timeStep;
+    writeInterval   10;
+    fields          (T U);
+    probeLocations
+    (
+        (1.3 2.4 0.1)      // behind occupant A: ankles
+        (1.3 2.4 0.6)      //                    waist
+        (1.3 2.4 1.1)      //                    neck (seated)
+        (3.7 2.4 0.1)      // behind occupant B: ankles
+        (3.7 2.4 0.6)      //                    waist
+        (3.7 2.4 1.1)      //                    neck (seated)
+        (2.5 3.0 1.1)       // room centre
+    );
+}
+
+// Heat flow through every wall patch, for the heat balance check
+#includeFunc wallHeatFlux
+
+#includeFunc yPlus
+
+// ************************************************************************* //
